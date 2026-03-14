@@ -58,9 +58,13 @@ var b = new Persona { Nombre = "Ana", Edad = 30 };
 Console.WriteLine(a == b); // false — son dos objetos distintos en el heap
 ```  
 
+![Estructura class](./Resources/Estructura%20class.png)  
+
+> Con **class**, el stack solo guarda la dirección. Ambas variables terminan siendo dos nombres distintos para el mismo objeto — cualquier cambio a través de una se refleja en la otra.
+
 Soporta **herencia, polimorfismo** y toda la maquinaria clásica de la POO. Es **mutable** por defecto (puedes cambiar sus propiedades después de crearlo).  
 
-> **¿Cuándo usar class?** Cuando el objeto tiene identidad propia, ciclo de vida largo, o necesitas herencia. Ejemplos: *UsuarioService*, *ProductoRepository*, *EmailSender*.
+>> **¿Cuándo usar class?** Cuando el objeto tiene identidad propia, ciclo de vida largo, o necesitas herencia. Ejemplos: *UsuarioService*, *ProductoRepository*, *EmailSender*.
 
 ## 2. struct — el tipo de valor
 ---  
@@ -84,7 +88,7 @@ Console.WriteLine(p1.X); // 10 — p1 no fue afectado, son copias independientes
 
 No soporta herencia (aunque sí puede implementar **interfaces** --> *se verá más adelante*). Al ser copiado en cada asignación, un struct grande puede ser contraproducente — el costo de copiar 100 campos en cada operación supera el beneficio de evitar el heap.  
 
-> **¿Cuándo usar struct?** Cuando el tipo es pequeño (2-4 campos), representa un valor simple sin identidad, y se usa mucho en colecciones o bucles. Ejemplos: *Point*, *Vector3*, *Color*, *DateTime*.  
+>> **¿Cuándo usar struct?** Cuando el tipo es pequeño (2-4 campos), representa un valor simple sin identidad, y se usa mucho en colecciones o bucles. Ejemplos: *Point*, *Vector3*, *Color*, *DateTime*.  
 
 ## 3. record — inmutabilidad e igualdad por valor
 ---  
@@ -104,7 +108,7 @@ Console.WriteLine(f1 == f2); // true — igualdad por valor, automáticamente
 
 ![Estrcutura en memoria de un objeto record](./Resources/Estructura%20record.png)
 
-
+---
 + **¿Qué pasa exactamente con la igualdad?**  
    
    Cuando f1 == f2 es true, son **DOS objetos distintos en el heap**, cada uno con su propia dirección de memoria. La igualdad no significa que compartan la misma ubicación — significa que el compilador generó automáticamente un método **Equals** que compara propiedad por propiedad.  
@@ -119,9 +123,13 @@ Console.WriteLine(f1 == f2); // true — igualdad por valor, automáticamente
 
     Console.WriteLine(f1 == f2); // true  → compara datos
     Console.WriteLine(ReferenceEquals(f1,f2)); // false →      compara direcciones
-   ``` 
+   ```   
 
+   **ReferenceEquals** es el método que ignora toda la magia del **record** y pregunta literalmente: ¿estas dos variables apuntan a la misma dirección de memoria? La respuesta es **false**, porque son objetos separados.  
 
+   Esto contrasta con una **class** normal, donde **==** también devolvería **false** porque no tiene ese **Equals** automático — haría exactamente lo mismo que **ReferenceEquals**.  
+   
+   ---
 
 El compilador genera automáticamente: constructor, **Equals**, **GetHashCode**, **ToString** y el operador **==** basado en los valores de las propiedades. No tienes que escribir nada de eso.  
 
@@ -138,7 +146,7 @@ Console.WriteLine(f2.Total); // 2000.00
 
 También existe el **record struct** (C# 10), que combina la semántica de valor del struct con las ventajas del record.
 
-> **¿Cuándo usar record?** Cuando los datos representan un hecho o mensaje que no debería cambiar: DTOs (Data Transfer Objects), eventos de dominio, respuestas de API, configuraciones. Ejemplos: *PedidoCreadoEvent*, *UsuarioDto*, *ConfiguracionApp*.  
+>> **¿Cuándo usar record?** Cuando los datos representan un hecho o mensaje que no debería cambiar: DTOs (Data Transfer Objects), eventos de dominio, respuestas de API, configuraciones. Ejemplos: *PedidoCreadoEvent*, *UsuarioDto*, *ConfiguracionApp*.  
 
 ### Regla de oro para elegir
 
@@ -148,7 +156,66 @@ Cuando tengas dudas, esta lógica te guía:
 
 2. **¿Es un dato pequeño y simple que representa un valor matemático o físico?** → struct (una coordenada, un color, un rango numérico).  
 
-3. **¿Es un dato que representa un hecho, mensaje o estado que no debería cambiar?** → record (una respuesta de API, un evento ocurrido, un DTO).
+3. **¿Es un dato que representa un hecho, mensaje o estado que no debería cambiar?** → record (una respuesta de API, un evento ocurrido, un DTO).  
+
+
+### ¿Por qué () y no { } como en class y struct?  
+
+Aquí hay dos cosas distintas que vale la pena separar: la **sintaxis posicional** y la **sintaxis tradicional**. Los record aceptan ambas.  
+
+**Sintaxis posicional** con () — es azúcar sintáctica (syntactic sugar): una forma compacta que le dice al compilador "declara estas propiedades Y **genera el constructor automáticamente con estos parámetros, en este orden**":  
+
+```c#
+// Esto:
+public record Factura(string Numero, decimal Total, string Cliente);
+
+// Es equivalente a escribir esto a mano:
+public record Factura
+{
+    public string Numero { get; init; }
+    public decimal Total { get; init; }
+    public string Cliente { get; init; }
+
+    public Factura(string numero, decimal total, string cliente)
+    {
+        Numero = numero;
+        Total = total;
+        Cliente = cliente;
+    }
+}
+```  
+
+La palabra clave **init** en lugar de **set** es lo que impone la **inmutabilidad**: la propiedad solo puede asignarse durante la construcción del objeto, nunca después.  
+
+También puedes usar { } con record cuando necesitas más control:  
+
+```c#
+// Record con sintaxis de bloque, igual que una class
+public record Producto
+{
+    public string Nombre { get; init; }
+    public decimal Precio { get; init; }
+    public string? Descripcion { get; init; } // propiedad opcional con valor por defecto
+
+    // Puedes agregar métodos, validaciones, etc.
+    public bool EsCaro => Precio > 1000;
+}
+
+var p = new Producto { Nombre = "Laptop", Precio = 1500 };
+```  
+
+La sintaxis **()** simplemente es más popular para **record** porque la mayoría de los casos de uso son exactamente ese patrón: un tipo pequeño, todos sus campos requeridos, sin lógica adicional. Una línea en vez de diez.  
+
+> El **record** con () también permite deconstrucción, igual que las tuplas:
+```c#
+var factura = new Factura("F-001", 1500m, "Acme");
+var (numero, total, cliente) = factura; // desempaca en variables separadas
+```
+> Esto funciona porque la sintaxis posicional genera automáticamente un método **Deconstruct**. Con la sintaxis de bloque { } tendrías que escribir ese método tú mismo.  
+
+### IMPORTANTE: la sintaxis poisicional () en la declaración es exclusiva de **record**. Pero cada tipo tuene su propia forma de lograr algo similar.
+ 
+---
 
 --> Pendiente, agregar conceptos sobre interfaz en el contexto de objetos (struct).
 
