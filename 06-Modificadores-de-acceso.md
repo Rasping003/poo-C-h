@@ -206,7 +206,7 @@ Cuando el método es tan simple que las llaves y el **return** son más ruido qu
     public void Saludar()             => Console.WriteLine("Hola, soy " + _nombre);
    ```  
 
-   Otro ejemplo usando propiedades y el recurso **interpolación de caracteres**:  
+   Otro ejemplo usando propiedades y el recurso **interpolación de cadenas**:  
 
    ```c#
     // Propiedad de solo lectura tradicional
