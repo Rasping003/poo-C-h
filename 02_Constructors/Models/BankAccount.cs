@@ -1,7 +1,7 @@
 using System.Runtime.ConstrainedExecution;
 using System.Security.AccessControl;
 
-public class BankAccount
+class BankAccount
 {
     public string Owner { get; set; } = ""; //Necesaria la inicialización con ""
     public decimal Amount { get; set; }
