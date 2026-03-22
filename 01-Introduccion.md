@@ -45,7 +45,7 @@ $ dotnet run
 ### Algunos pluggings recomendadas:  
 
 + C# y Kit Dev C# de Microsoft
-+ .NET Intall Tool (extensión para trabajar con .NET).
++ .NET Install Tool (extensión para trabajar con .NET).
 + Avtivitus Bar, para cambiar la vista de la barra de herramientas lateral.
 + Code Spell Checker, que sirve como un corrector ortográfico al momento de escribir cualquier palabra.
 + vscode-icons, para tener un mejor estilo de iconos en carpetas y archivos.
