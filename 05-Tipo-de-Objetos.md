@@ -199,6 +199,7 @@ public record Producto
 {
     public string Nombre { get; init; }
     public decimal Precio { get; init; }
+    // La descripción puede ser nula y solo se establece al crear el objeto
     public string? Descripcion { get; init; } // propiedad opcional con valor por defecto
 
     // Puedes agregar métodos, validaciones, etc.
@@ -206,7 +207,9 @@ public record Producto
 }
 
 var p = new Producto { Nombre = "Laptop", Precio = 1500 };
-```  
+```
+> + string? (Nullable Reference Type - C# 8+): El signo de interrogación ? indica que la propiedad Descripcion puede almacenar una cadena de texto (string) o un valor nulo (null). Sin el ?, el compilador podría advertir si se asigna un nulo a una referencia de cadena.
+> + init (Init-only Setter - C# 9+): Permite asignar un valor a la propiedad únicamente durante la inicialización del objeto (ya sea en el constructor o mediante un inicializador de objetos new Clase { Descripcion = "..." }). Una vez creado el objeto, la propiedad se vuelve de solo lectura (get solamente), garantizando la inmutabilidad.
 
 La sintaxis **()** simplemente es más popular para **record** porque la mayoría de los casos de uso son exactamente ese patrón: un tipo pequeño, todos sus campos requeridos, sin lógica adicional. Una línea en vez de diez.  
 
@@ -217,7 +220,7 @@ var (numero, total, cliente) = factura; // desempaca en variables separadas
 ```
 > Esto funciona porque la sintaxis posicional genera automáticamente un método **Deconstruct**. Con la sintaxis de bloque { } tendrías que escribir ese método tú mismo.  
 
-### IMPORTANTE: la sintaxis poisicional () en la declaración es exclusiva de **record**. Pero cada tipo tiene su propia forma de lograr algo similar.
+### IMPORTANTE: la sintaxis posicional () en la declaración es exclusiva de **record**. Pero cada tipo tiene su propia forma de lograr algo similar.
  
 ---
 
